@@ -1,7 +1,7 @@
 import os
 import webbrowser
 from types import TracebackType
-from typing import Any, Dict, Iterator, Optional
+from typing import Any, Dict, Iterator, Optional, Union
 from urllib import parse
 
 import lomond
@@ -10,11 +10,12 @@ import simplejson
 
 from determined_common.api import authentication, errors
 
-# The path to a file containing an SSL certificate to trust specifically for the master, if any.
+# The path to a file containing an SSL certificate to trust specifically for the master, if any, or
+# False to disable cert verification entirely.
 _master_cert_bundle = None
 
 
-def set_master_cert_bundle(path: str) -> None:
+def set_master_cert_bundle(path: Optional[Union[str, bool]]) -> None:
     global _master_cert_bundle
     _master_cert_bundle = path
 
@@ -23,12 +24,16 @@ def set_master_cert_bundle(path: str) -> None:
 # always count on having an entry point we control (e.g., if someone is importing this code in a
 # notebook).
 try:
-    set_master_cert_bundle(os.environ["DET_MASTER_CERT_FILE"])
+    f = os.environ["DET_MASTER_CERT_FILE"]
+    if f == "False":
+        set_master_cert_bundle(False)
+    else:
+        set_master_cert_bundle(f)
 except KeyError:
     pass
 
 
-def get_master_cert_bundle() -> Optional[str]:
+def get_master_cert_bundle() -> Optional[Union[str, bool]]:
     return _master_cert_bundle
 
 

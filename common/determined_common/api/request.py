@@ -23,14 +23,10 @@ def set_master_cert_bundle(path: Optional[Union[str, bool]]) -> None:
 # Set the bundle if one is specified by the environment. This is done on import since we can't
 # always count on having an entry point we control (e.g., if someone is importing this code in a
 # notebook).
-try:
-    f = os.environ["DET_MASTER_CERT_FILE"]
-    if f == "False":
-        set_master_cert_bundle(False)
-    else:
-        set_master_cert_bundle(f)
-except KeyError:
-    pass
+f = os.environ.get("DET_MASTER_CERT_FILE")  # type: Optional[Union[str, bool]]
+if f == "False":
+    f = False
+set_master_cert_bundle(f)
 
 
 def get_master_cert_bundle() -> Optional[Union[str, bool]]:
